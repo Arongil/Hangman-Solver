@@ -18,7 +18,7 @@ def nextLetter():
   return "temporary return"
 
 # The nextLetter() function will slowly fill out this list.
-word = ["" i in xrange(wordLength)]
+word = ["" for i in xrange(wordLength)]
 
 foundWord = false
 while not foundWord:
