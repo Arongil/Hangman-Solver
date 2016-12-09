@@ -12,7 +12,8 @@ currentVowel = 0
 
 def nextLetter():
   # If we know nothing about the word, we will guess vowels, until we find one.
-  if knownLetters.length == 0:
+  if len(knownLetters) == 0:
+    global currentVowel
     currentVowel += 1
     return vowels[currentVowel - 1]
   return "temporary return"
@@ -20,19 +21,19 @@ def nextLetter():
 # The nextLetter() function will slowly fill out this list.
 word = ["" for i in xrange(wordLength)]
 
-foundWord = false
+foundWord = False
 while not foundWord:
   nextGuess = nextLetter()
   ######################
   # Temporary
   if nextGuess == "temporary return":
-    foundWord = true
+    foundWord = True
   # Temporary
   ######################
-  print nextGuess
+  print "'" + nextGuess + "' is the guess for the next letter."
   correct = raw_input("Was the letter correct? [y/n]")
   if correct == "y":
-    position = int(raw_input("Where in the word was the letter ('r' in 'word' is at '3')? [integer]"))
+    position = int(raw_input("Where in the word was the letter ('r' in 'word' is at '3', for example)? [integer]"))
     # knownLetters is made up of arrays, with the 0th element as the letter, and the first as position.
     knownLetters.append([nextGuess, position])
   else:
