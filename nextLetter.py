@@ -70,18 +70,17 @@ def createSubset(doneWordLength = True):
         break
     # We check if it has been disqualified already throughout the process to avoid unnecessary calculations. While rather pointless for only 1,000 words, this will make a world of difference for 300,000 words.
     if disqualified:
-      break
+      continue
     # Now that the word has passes the nonLetter phase, we see if it will contain the letters we know about, in the exact correct places.
     for word in words:
       for knownLetter in knownLetters:
         # We check each knownLetter, to see if there is the correct corresponding letter in the word. If not, it's disqualified! knownLetter is an array of arrays that follow the format [letter, positionInWord]. For each knownLetter we check, we find the position of that knownLetter, and find the word's letter at that position (word[knownLetter[1]]), and compare it to the letter we know should be there (knownLetter[0]).
-        
         if word[knownLetter[1]] != knownLetter[0]:
           disqualified = True
           break
     # We've now completed the full test. If the word was disqualified, it isn't added. Otherwise, it is!
     if disqualified:
-      break
+      continue
     subset.append(word)
   
   return subset
