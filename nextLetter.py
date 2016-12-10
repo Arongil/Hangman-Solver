@@ -1,6 +1,13 @@
 # This will contain the function that will determine the, statistically, best next letter to pick, for the given word and known letters.
 
-# Change to match the current word length
+# TODO: test if guessing vowels until one is found is more or less efficient than guessing "e", then running statistical analysis on the new subset created, to continue the guessing process.
+
+from random import randint
+
+# Change this to false to manually input if the guess is correct, and if so where, and to true for the computer to automatically do this for you.
+automatic = True
+
+# Change to match the current word length.
 wordLength = 5
 # This list will reflect everything we know about the word so far.
 knownLetters = []
@@ -16,31 +23,104 @@ def nextLetter():
     global currentVowel
     currentVowel += 1
     return vowels[currentVowel - 1]
-  return "temporary return"
+  
+  # We now know at least one letter of the word. Our first step is to create a subset of the total words that only contains words that match our current knowledge of the word: length, knownLetters, and knownNonLetters.
+  createSubset()
+  
+  # Now that we have a subset of the words to work with, that match our current knowledge of the word, we can run a statistcal analysis of the words to find the most highly occuring letter, and guess that next!
+  # First we create a list of all the letters occurances, and set everything to 0.
+  letterOccurances = [0 for i in xrange(26)]
+  for word in words:
+    for letter in word:
+      # Each letter will add one to it's corresponding array index. Ord(char) returns that character's ASCII value. We substract 97, assuming all characters are lowercase, to find the index for each character. Chr(number) returns the ASCII value for that number.
+      letterOccurances[ord(letter) - 97] += 1
+  
+  # Now we will find the most commonly occuring letter, and guess that.
+  currentHighest = 0
+  for letter in xrange(1, len(letterOccurances)):
+    if letterOccurances[letter] > letterOccurances[currentHighest]:
+      currentHighest = letter
+  
+  # We add 97 to currentHighest to revert currentHighest from being an index to the letterOccurances array, to an ASCII value.
+  return chr(currentHighest + 97)
+
+def createSubset(doneWordLength = True):
+  subset = []
+  # To create a subset of all words, we first need to check if we have already done the original wordLength check.
+  
+  if not doneWordLength:
+    # Run through the words array, taking only words of length wordLength.
+    for word in words:
+      if len(word) == wordLength:
+        subset.append(word)
+    return subset
+  
+  # If we have checked wordLength already, we need to check for knownLetters and knownNonLetters. If a word contains any knownNonLetters, it's immediately disqualified. If not, we need to check for knownLetters. A word has to contain knownLetters in the exact position we know they are.
+  for word in words:
+    # We set disqualified to True if we know a word is wrong. If a word makes it to the end of the check without disqualification, it makes the new subset.
+    disqualified = False
+    # First we'll check for if the word contains any knownNonLetters. If so, it isn't added.
+    for letter in word:
+      for nonLetter in knownNonLetters:
+        if letter == nonLetter:
+          disqualified = true
+          break
+      if disqualified:
+        break
+    # We check if it has been disqualified already throughout the process to avoid unnecessary calculations. While rather pointless for only 1,000 words, this will make a world of difference for 300,000 words.
+    if disqualified:
+      break
+    # Now that the word has passes the nonLetter phase, we see if it will contain the letters we know about, in the exact correct places.
+    for word in words:
+      for knownLetter in knownLetters:
+        # We check each knownLetter, to see if there is the correct corresponding letter in the word. If not, it's disqualified! knownLetter is an array of arrays that follow the format [letter, positionInWord]. For each knownLetter we check, we find the position of that knownLetter, and find the word's letter at that position (word[knownLetter[1]]), and compare it to the letter we know should be there (knownLetter[0]).
+        
+        if word[knownLetter[1]] != knownLetter[0]:
+          disqualified = True
+          break
+    # We've now completed the full test. If the word was disqualified, it isn't added. Otherwise, it is!
+    if disqualified:
+      break
+    subset.append(word)
+  
+  return subset
 
 # The nextLetter() function will slowly fill out this list.
-word = ["" for i in xrange(wordLength)]
+wordSlots = ["" for i in xrange(wordLength)]
 
-foundWord = False
-while not foundWord:
-  nextGuess = nextLetter()
-  ######################
-  # Temporary
-  if nextGuess == "temporary return":
-    foundWord = True
-  # Temporary
-  ######################
-  print "'" + nextGuess + "' is the guess for the next letter."
-  correct = raw_input("Was the letter correct? [y/n]")
-  if correct == "y":
-    position = int(raw_input("Where in the word was the letter ('r' in 'word' is at '3', for example)? [integer]"))
-    # knownLetters is made up of arrays, with the 0th element as the letter, and the first as position.
-    knownLetters.append([nextGuess, position])
-  else:
-    # knownNonLetters is just an array of letters that we have checked, that aren't in the word.
-    knownNonLetters.append(nextGuess)
+def guessWord():
+  foundWord = False
+  
+  # We will create one original subset that will contain all the words of the given wordLength.
+  createSubset()
+  while not foundWord:
+    nextGuess = nextLetter(False)
+    print "'" + nextGuess + "' is the guess for the next letter."
+    if automatic:
+      pass
+    else:
+      correct = raw_input("Was the letter correct? [y/n]")
+      if correct == "y":
+        occurances = int(raw_input("How many times did it occur? [integer"))
+        for i in xrange(occurances):
+          position = int(raw_input("Where in the word was the letter ('r' in 'word' is at '3', for example)? [integer]"))
+          # knownLetters is made up of arrays, with the 0th element as the letter, and the first as position.
+          knownLetters.append([nextGuess, position])
+          wordSlots[position - 1] = nextGuess
+      else:
+        # knownNonLetters is just an array of letters that we have checked, that aren't in the word.
+        knownNonLetters.append(nextGuess)
 
-print "\nCode Complete."
+      # If we know the word, return.
+      if len(knownLetters) == wordLength:
+        foundWord = True
+
+  print "\nCode Complete."
+  return None
+
+word = words[randint(0, len(words) - 1)]
+
+guessWord()
 
 
 # List of all of the words given. Here a simple online python script I wrote to convert a .txt file into an array: https://trinket.io/library/trinkets/9252730ed1
