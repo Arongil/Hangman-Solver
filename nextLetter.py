@@ -5,7 +5,7 @@
 from random import randint
 
 # Change this to false to manually input if the guess is correct, and if so where, and to true for the computer to automatically do this for you.
-automatic = False
+automatic = True
 
 # wordLength will be set once the word is randomly chosen.
 wordLength = None
@@ -100,16 +100,28 @@ def createSubset(words, doneWordLength = True):
   
   return subset
 
-def guessWord(words):
+def guessWord(words, word):
+  # We pass in word PURELY for the purpose of checking if the guess was right for automatic mode.
   foundWord = False
   
   # We will create one original subset that will contain all the words of the given wordLength.
   words = createSubset(words, False)
   while not foundWord:
+    # automatic mode automatically checks if the guess is correct, so you don't have to! Great for statistics, because it's fast!
     nextGuess = nextLetter(words)
     print "\n'" + nextGuess + "' is the guess for the next letter."
     if automatic:
-      pass
+      correct = []
+      for i in xrange(len(word)):
+        letter = word[i]
+        if letter == nextGuess:
+          correct.append(i)
+      if len(correct) == 0:
+        knownNonLetters.append(nextGuess)
+      else:
+        for position in correct:
+          knownLetters.append([nextGuess, position])
+          wordSlots[position] = nextGuess
     else:
       correct = raw_input("Was the letter correct? [y/n]")
       if correct == "y":
@@ -123,11 +135,11 @@ def guessWord(words):
         # knownNonLetters is just an array of letters that we have checked, that aren't in the word.
         knownNonLetters.append(nextGuess)
 
-      # If we know the word, return.
-      if len(knownLetters) == wordLength:
-        foundWord = True
+    # If we know the word, return. >=, just in case something breaks and we have more knownLetters than letters.
+    if len(knownLetters) >= wordLength:
+      foundWord = True
 
-  print "\nCode complete; the word was '" + word + "'."
+  print "\nCode complete; the word was %s." %(wordSlots)
   return None
 
 
@@ -141,4 +153,4 @@ print "The word is '" + word + "'; the computer does not know this.\n"
 # The nextLetter() function will slowly fill out this list.
 wordSlots = ["" for i in xrange(wordLength)]
 
-guessWord(words)
+guessWord(words, word)
