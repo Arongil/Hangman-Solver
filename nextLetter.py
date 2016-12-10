@@ -14,19 +14,13 @@ knownLetters = []
 # This list will contain all letters not in the word.
 knownNonLetters = []
 
-vowels = ["e", "a", "o", "i", "u", "y"]
-currentVowel = 0
-
-def nextLetter():
+def nextLetter(words):
   # If we know nothing about the word, we will guess vowels, until we find one.
-  if len(knownLetters) == 0:
-    global currentVowel
-    currentVowel += 1
-    return vowels[currentVowel - 1]
+  if len(knownLetters) == 0 and len(knownNonLetters) == 0:
+    return "e"
   
   # We now know at least one letter of the word. Our first step is to create a subset of the total words that only contains words that match our current knowledge of the word: length, knownLetters, and knownNonLetters.
-  global words
-  words = createSubset()
+  words = createSubset(words)
   
   # Now that we have a subset of the words to work with, that match our current knowledge of the word, we can run a statistcal analysis of the words to find the most highly occuring letter, and guess that next!
   # First we create a list of all the letters occurances, and set everything to 0.
@@ -40,13 +34,21 @@ def nextLetter():
   currentHighest = 0
   for letter in xrange(1, len(letterOccurances)):
     if letterOccurances[letter] > letterOccurances[currentHighest]:
-      currentHighest = letter
+      # We make sure that the new champion isn't already a knownLetter.
+      alreadyIn = False
+      for knownLetter in knownLetters:
+        if knownLetter[0] == chr(letter + 97):
+          alreadyIn = True
+          break
+      if not alreadyIn:
+        currentHighest = letter
   
   # We add 97 to currentHighest to revert currentHighest from being an index to the letterOccurances array, to an ASCII value.
   return chr(currentHighest + 97)
 
-def createSubset(doneWordLength = True):
+def createSubset(words, doneWordLength = True):
   subset = []
+  
   # To create a subset of all words, we first need to check if we have already done the original wordLength check.
   
   if not doneWordLength:
@@ -57,9 +59,11 @@ def createSubset(doneWordLength = True):
     return subset
   
   # If we have checked wordLength already, we need to check for knownLetters and knownNonLetters. If a word contains any knownNonLetters, it's immediately disqualified. If not, we need to check for knownLetters. A word has to contain knownLetters in the exact position we know they are.
+  global disqualified
+  disqualified = False
   for word in words:
-    # We set disqualified to True if we know a word is wrong. If a word makes it to the end of the check without disqualification, it makes the new subset.
     disqualified = False
+    # We set disqualified to True if we know a word is wrong. If a word makes it to the end of the check without disqualification, it makes the new subset.
     # First we'll check for if the word contains any knownNonLetters. If so, it isn't added.
     for letter in word:
       for nonLetter in knownNonLetters:
@@ -71,27 +75,26 @@ def createSubset(doneWordLength = True):
     # We check if it has been disqualified already throughout the process to avoid unnecessary calculations. While rather pointless for only 1,000 words, this will make a world of difference for 300,000 words.
     if disqualified:
       continue
-    # Now that the word has passes the nonLetter phase, we see if it will contain the letters we know about, in the exact correct places.
-    for word in words:
-      for knownLetter in knownLetters:
-        # We check each knownLetter, to see if there is the correct corresponding letter in the word. If not, it's disqualified! knownLetter is an array of arrays that follow the format [letter, positionInWord]. For each knownLetter we check, we find the position of that knownLetter, and find the word's letter at that position (word[knownLetter[1]]), and compare it to the letter we know should be there (knownLetter[0]).
-        if word[knownLetter[1]] != knownLetter[0]:
-          disqualified = True
-          break
+    # Now that the word has passed the nonLetter phase, we see if it will contain the letters we know about, in the exact correct places.
+    for knownLetter in knownLetters:
+      # We check each knownLetter to see if there is the correct corresponding letter in the word. If not, it's disqualified! knownLetter is an array of arrays that follow the format [letter, positionInWord]. For each knownLetter we check, we find the position of that knownLetter, and find the word's letter at that position (word[knownLetter[1]]), and compare it to the letter we know should be there (knownLetter[0]).
+      if word[knownLetter[1]] != knownLetter[0]:
+        disqualified = True
+        break
+    
     # We've now completed the full test. If the word was disqualified, it isn't added. Otherwise, it is!
-    if disqualified:
-      continue
-    subset.append(word)
+    if not disqualified:
+      subset.append(word)
   
   return subset
 
-def guessWord():
+def guessWord(words):
   foundWord = False
   
   # We will create one original subset that will contain all the words of the given wordLength.
-  createSubset(False)
+  words = createSubset(words, False)
   while not foundWord:
-    nextGuess = nextLetter()
+    nextGuess = nextLetter(words)
     print "'" + nextGuess + "' is the guess for the next letter."
     if automatic:
       pass
@@ -102,7 +105,7 @@ def guessWord():
         for i in xrange(occurances):
           position = int(raw_input("Where in the word was the letter ('r' in 'word' is at '3', for example)? [integer]"))
           # knownLetters is made up of arrays, with the 0th element as the letter, and the first as position.
-          knownLetters.append([nextGuess, position])
+          knownLetters.append([nextGuess, position - 1])
           wordSlots[position - 1] = nextGuess
       else:
         # knownNonLetters is just an array of letters that we have checked, that aren't in the word.
@@ -112,7 +115,7 @@ def guessWord():
       if len(knownLetters) == wordLength:
         foundWord = True
 
-  print "\nCode Complete."
+  print "\nCode complete; the word was '" + word + "'."
   return None
 
 
@@ -126,4 +129,4 @@ print "The word is '" + word + "'; the computer does not know this.\n"
 # The nextLetter() function will slowly fill out this list.
 wordSlots = ["" for i in xrange(wordLength)]
 
-guessWord()
+guessWord(words)
