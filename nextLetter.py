@@ -25,7 +25,8 @@ def nextLetter():
     return vowels[currentVowel - 1]
   
   # We now know at least one letter of the word. Our first step is to create a subset of the total words that only contains words that match our current knowledge of the word: length, knownLetters, and knownNonLetters.
-  createSubset()
+  global words
+  words = createSubset()
   
   # Now that we have a subset of the words to work with, that match our current knowledge of the word, we can run a statistcal analysis of the words to find the most highly occuring letter, and guess that next!
   # First we create a list of all the letters occurances, and set everything to 0.
