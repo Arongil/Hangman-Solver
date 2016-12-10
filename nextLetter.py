@@ -63,7 +63,7 @@ def createSubset(doneWordLength = True):
     for letter in word:
       for nonLetter in knownNonLetters:
         if letter == nonLetter:
-          disqualified = true
+          disqualified = True
           break
       if disqualified:
         break
