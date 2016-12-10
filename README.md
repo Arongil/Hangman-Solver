@@ -1,6 +1,8 @@
 # Hangman-Solver
 Solves hangman.
 
+Working version: https://trinket.io/library/trinkets/d64e49300f.
+
 This is the basic psuedo-code for finding the next hangman letter, given a word list, and a word length:
 
 Guess vowels until one is found (in the order: e, a, o, i, u, y);
