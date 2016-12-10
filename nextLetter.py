@@ -1,7 +1,5 @@
 # This will contain the function that will determine the, statistically, best next letter to pick, for the given word and known letters.
 
-# TODO: test if guessing vowels until one is found is more or less efficient than guessing "e", then running statistical analysis on the new subset created, to continue the guessing process.
-
 from random import randint
 
 # Change this to false to manually input if the guess is correct, and if so where, and to true for the computer to automatically do this for you.
