@@ -8,8 +8,6 @@ With about 4000 words, the algorithm can get words, on average, in 7.868 guesses
 from random import randint
 from math import floor
 
-# Change this to false to manually input if the guess is correct, and if so where, and to true for the computer to automatically do this for you.
-automatic = True
 # Statistics mode makes the program not print data about each word. Changing wordsToTest will change how many words data is gathered on. A larger number means more accuracy, at the cost of time.
 # Changing wordsToTest has no effect if statisticsMode is False.
 statisticsMode = False
@@ -143,38 +141,37 @@ def guessWord(words, word):
       nextGuess = nextLetter(words)
     else:
       nextGuess = raw_input("Next guess:")
+      # We have to be sure that the guess isn't a repeat.
+      repeat = True
+      while repeat:
+        repeat = False
+        for knownLetter in knownLetters:
+          if nextGuess == knownLetter[0]:
+            repeat = True
+        for knownNonLetter in knownNonLetters:
+          if nextGuess == knownNonLetter:
+            repeat = True
+        if repeat:
+          print "\n* Don't type in a letter you've already typed in.\n"
+          nextGuess = raw_input("Next guess:")
     guesses += nextGuess
     correctGuesses += 1
     if not statisticsMode:
       print "\n'" + nextGuess + "' is the guess for the next letter."
-    if automatic:
-      correct = []
-      for i in xrange(len(word)):
-        letter = word[i]
-        if letter == nextGuess:
-          correct.append(i)
-      if len(correct) == 0:
-        knownNonLetters.append(nextGuess)
-        wrongGuesses += 1
-      else:
-        for position in correct:
-          knownLetters.append([nextGuess, position])
-          if not statisticsMode:
-            wordSlots[position] = nextGuess
+    # Check if the guess was correct.
+    correct = []
+    for i in xrange(len(word)):
+      letter = word[i]
+      if letter == nextGuess:
+        correct.append(i)
+    if len(correct) == 0:
+      knownNonLetters.append(nextGuess)
+      wrongGuesses += 1
     else:
-      correct = raw_input("Was the letter correct? [y/n]")
-      if correct == "y":
-        occurances = int(raw_input("How many times did it occur? [integer]"))
-        for i in xrange(occurances):
-          position = int(raw_input("Where in the word was the letter ('r' in 'word' is at '3', for example)? [integer]"))
-          # knownLetters is made up of arrays, with the 0th element as the letter, and the first as position.
-          knownLetters.append([nextGuess, position - 1])
-          if not statisticsMode:
-            wordSlots[position - 1] = nextGuess
-      else:
-        # knownNonLetters is just an array of letters that we have checked, that aren't in the word.
-        knownNonLetters.append(nextGuess)
-        wrongGuesses += 1
+      for position in correct:
+        knownLetters.append([nextGuess, position])
+        if not statisticsMode:
+          wordSlots[position] = nextGuess
 
     # If we know the word, return. >=, just in case something breaks and we have more knownLetters than letters.
     if len(knownLetters) >= wordLength:
